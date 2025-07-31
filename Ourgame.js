@@ -1,4 +1,4 @@
-let playerImg, goalImg, cutscene1Img, cutscene2Img, cutscene3Img, cutscene4Img, cutscene5Img, cutscene6Img;
+let playerImg, goalImg, cutscene1Img, cutscene2Img, cutscene3Img;
 let player;
 let goal;
 let obstacles = [];
@@ -9,10 +9,7 @@ function preload() {
   goalImg = loadImage("Yeshihouse.jpeg");
   cutscene1Img = loadImage("Yeshi.jpg");
   cutscene2Img = loadImage("Mike.png");
-  cutscene3Img = loadImage("Cutscene3.jpg");
-  cutscene4Img = loadImage("Cutscene4.jpg");
-  cutscene5Img = loadImage("Cutscene5.jpg");
-  cutscene6Img = loadImage("Cutscene6.jpg");
+  cutscene3Img = loadImage("Yeshi.jpg");
 }
 
 function setup() {
@@ -40,12 +37,6 @@ function draw() {
     drawCutscene2();
   } else if (gameState === "cutscene3") {
     drawCutscene3();
-  } else if (gameState === "cutscene4") {
-    drawCutscene4();
-  } else if (gameState === "cutscene5") {
-    drawCutscene5();
-  } else if (gameState === "cutscene6") {
-    drawCutscene6();
   }
 }
 
