@@ -5,18 +5,18 @@ let obstacles = [];
 let gameState = "start";
 
 function preload() {
-  playerImg = loadImage("Mike.png");
-  goalImg = loadImage("Yeshihouse.jpeg");
-  cutscene1Img = loadImage("Yeshi.jpg");
-  cutscene2Img = loadImage("Mike.png");
-  cutscene3Img = loadImage("Yeshi.jpg");
+  playerImg = loadImage('Mike.png');
+  goalImg = loadImage('Yeshihouse.jpeg');
+  cutscene1Img = loadImage('Yeshi.jpg');
+  cutscene2Img = loadImage('Mike.png');
+  cutscene3Img = loadImage('Yeshi.jpg');
 }
 
 function setup() {
   createCanvas(600, 400);
   player = createVector(100, 200);
   goal = createVector(500, 200);
-
+  
   for (let i = 0; i < 10; i++) {
     let x = random(150, 450);
     let y = random(50, 350);
@@ -37,6 +37,8 @@ function draw() {
     drawCutscene2();
   } else if (gameState === "cutscene3") {
     drawCutscene3();
+  } else if (gameState === "quiz") {
+    drawQuiz();
   }
 }
 
@@ -52,7 +54,6 @@ function drawStartScreen() {
 
 function drawPlayScreen() {
   background(200);
-
   image(playerImg, player.x, player.y, 40, 40);
   image(goalImg, goal.x, goal.y, 60, 60);
 
@@ -99,11 +100,11 @@ function drawCutscene2() {
   textAlign(CENTER);
   textSize(16);
   text("Choose wisely!", width / 2, 30);
-  
+
   fill(255);
   rect(150, 300, 100, 40);
   rect(350, 300, 100, 40);
-  
+
   fill(0);
   textSize(16);
   text("None of your business", 200, 325);
@@ -118,40 +119,27 @@ function drawCutscene3() {
   fill(0);
   textAlign(CENTER);
   textSize(16);
-  text("Let's find some shelter.", width / 2, 30);
+  text("Do you want to go to my house for shelter.", width / 2, 30);
 }
 
-function drawCutscene4() {
-  background(120);
-  image(cutscene4Img, width / 2 - 100, 100, 200, 200);
+function drawQuiz() {
+  background(150);
   fill(255);
   rect(0, 0, width, 50);
   fill(0);
   textAlign(CENTER);
   textSize(16);
-  text("The journey continues...", width / 2, 30);
-}
+  text("Quiz Time: Which path leads to shelter?", width / 2, 30);
 
-function drawCutscene5() {
-  background(140);
-  image(cutscene5Img, width / 2 - 100, 100, 200, 200);
+  // Options for the quiz
   fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-  textAlign(CENTER);
-  textSize(16);
-  text("A new challenge awaits!", width / 2, 30);
-}
+  rect(150, 300, 100, 40); // Option 1: Wrong
+  rect(350, 300, 100, 40); // Option 2: Correct
 
-function drawCutscene6() {
-  background(160);
-  image(cutscene6Img, width / 2 - 100, 100, 200, 200);
-  fill(255);
-  rect(0, 0, width, 50);
   fill(0);
-  textAlign(CENTER);
   textSize(16);
-  text("The end or just the beginning?", width / 2, 30);
+  text("Acept Yeshi's offer", 200, 325);
+  text("Decline Yeshi's offer", 400, 325);
 }
 
 function mousePressed() {
@@ -161,16 +149,19 @@ function mousePressed() {
     gameState = "cutscene2";
   } else if (gameState === "cutscene2") {
     if (mouseX > 150 && mouseX < 250 && mouseY > 300 && mouseY < 340) {
-      gameState = "cutscene4"; // New sequence continues
+      gameState = "cutscene3";
     } else if (mouseX > 350 && mouseX < 450 && mouseY > 300 && mouseY < 340) {
       gameState = "cutscene3";
     }
   } else if (gameState === "cutscene3") {
-    gameState = "cutscene5";
-  } else if (gameState === "cutscene4") {
-    gameState = "cutscene6";
-  } else if (gameState === "cutscene5" || gameState === "cutscene6") {
-    player.set(100, 200);
-    gameState = "start";
+    gameState = "quiz";
+  } else if (gameState === "quiz") {
+    // Path A is wrong, Path B is right
+    if (mouseX > 150 && mouseX < 250 && mouseY > 300 && mouseY < 340) {
+      player.set(100, 200);
+      gameState = "start";
+    } else if (mouseX > 350 && mouseX < 450 && mouseY > 300 && mouseY < 340) {
+      gameState = "play";
+    }
   }
 }
