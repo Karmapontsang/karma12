@@ -25,7 +25,12 @@ let playerXP = 0;
 let xpToLevel = 5;
 let lastLevelUpTime = 0;
 let showLevelUpFlash = false;
-let lastXPTime = 0; 
+
+// Mini-game state for code pieces
+let codePieces = ["let", "x", "=", "10;"];
+let collectedPieces = [];
+let foundAllPieces = false;
+let piecePositions = []; // Positions for the pieces
 
 function preload() {
   playerImg = loadImage('Mike.png', () => console.log('playerImg loaded'), () => console.error('playerImg failed to load: Mike.png'));
@@ -49,6 +54,11 @@ function setup() {
     let x = random(150, 450);
     let y = random(50, 350);
     obstacles.push(createVector(x, y));
+  }
+
+  // Initialize piece positions
+  for (let i = 0; i < codePieces.length; i++) {
+    piecePositions.push(createVector(random(50, 550), random(50, 350)));
   }
 
   textFont('Arial');
@@ -97,7 +107,7 @@ function draw() {
   } else if (gameState === "congratulations") {
     drawCongratulationsScreen();
   } else if (gameState === "minigame") {
-    drawInteractiveCSSLesson();
+    drawCodeMiniGame();
   }
 
   drawLevelUI();
@@ -449,60 +459,34 @@ function drawCongratulationsScreen() {
   text("Click to continue", width / 2, height / 2 + 40);
 }
 
-function drawInteractiveCSSLesson() {
+function drawCodeMiniGame() {
   background(180, 220, 180);
   fill(255);
   rect(0, 0, width, 50);
   fill(0);
   textSize(20);
   textAlign(CENTER, CENTER);
-  text("Interactive CSS Lesson: Choose a color and size for the box below.", width / 2, 30);
 
-  // Draw color options
-  let colors = ["red", "blue", "green"];
-  let sizeOptions = ["small", "medium", "large"];
+  if (!foundAllPieces) {
+    text("Find all pieces of code!", width / 2, 30);
 
-  for (let i = 0; i < colors.length; i++) {
-    let x = 50 + i * 110;
-    let y = 80;
-    fill(colors[i]);
-    rect(x, y, 80, 40, 10);
-    if (chosenColor === colors[i]) {
-      stroke(0);
-      strokeWeight(4);
-      noFill();
-      rect(x - 5, y - 5, 90, 50, 10);
-      noStroke();
+    for (let i = 0; i < codePieces.length; i++) {
+      if (!collectedPieces.includes(codePieces[i])) {
+        let pos = piecePositions[i];
+        fill(200);
+        rect(pos.x, pos.y, 60, 30, 5);
+        fill(0);
+        textSize(14);
+        text(codePieces[i], pos.x + 30, pos.y + 15);
+      }
+    }
+  } else {
+    text("Arrange the pieces: " + collectedPieces.join(" "), width / 2, 30);
+    // Check correctness for fun
+    if (collectedPieces.join(" ") === "let x = 10;") {
+      text("Correct Code!", width / 2, height - 30);
     }
   }
-
-  // Draw size options
-  for (let i = 0; i < sizeOptions.length; i++) {
-    let x = 50 + i * 110;
-    let y = 140;
-    fill(200);
-    rect(x, y, 80, 40, 10);
-    fill(0);
-    textSize(18);
-    textAlign(CENTER, CENTER);
-    text(sizeOptions[i], x + 40, y + 20);
-    if (chosenSize === sizeOptions[i]) {
-      stroke(0);
-      strokeWeight(4);
-      noFill();
-      rect(x - 5, y - 5, 90, 50, 10);
-      noStroke();
-    }
-  }
-
-  // Show box with chosen color and size
-  let boxSize;
-  if (chosenSize === "small") boxSize = 50;
-  else if (chosenSize === "medium") boxSize = 80;
-  else boxSize = 120;
-
-  fill(chosenColor);
-  rect(width / 2 - boxSize / 2, 250, boxSize, boxSize, 15);
 
   // Add End Button
   fill(200);
@@ -541,7 +525,7 @@ function mousePressed() {
     let btnY = 300;
 
     if (mouseX > startX && mouseX < startX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-      // "None of your business" clicked - reset to start
+      // Wrong choice, restart to start
       player.set(100, 200);
       gameState = "start";
     } else if (mouseX > startX + btnWidth + spacing && mouseX < startX + btnWidth * 2 + spacing && mouseY > btnY && mouseY < btnY + btnHeight) {
@@ -558,7 +542,7 @@ function mousePressed() {
     let btnY = 300;
 
     if (mouseX > startX && mouseX < startX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-      // Decline Yeshi's offer
+      // Decline Yeshi's offer, restart game
       player.set(100, 200);
       gameState = "start";
     } else if (mouseX > startX + btnWidth + spacing && mouseX < startX + btnWidth * 2 + spacing && mouseY > btnY && mouseY < btnY + btnHeight) {
@@ -588,7 +572,11 @@ function mousePressed() {
     for (let i = 0; i < numOptions; i++) {
       let x = startX + i * (btnWidth + spacing);
       if (mouseX > x && mouseX < x + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-        if (i === qObj.correct) {
+        if (i !== qObj.correct) {
+          // Wrong answer, restart game
+          player.set(100, 200);
+          gameState = "start";
+        } else {
           quiz2Score++;
           playerXP++;
           if (playerXP >= xpToLevel) {
@@ -597,13 +585,13 @@ function mousePressed() {
             showLevelUpFlash = true;
             lastLevelUpTime = millis();
           }
-        }
-        quiz2Index++;
-        if (quiz2Index >= quiz2Questions.length) {
-          // Move to quiz3
-          quiz3Index = 0;
-          quiz3Score = 0;
-          gameState = "quiz3";
+          quiz2Index++;
+          if (quiz2Index >= quiz2Questions.length) {
+            // Move to quiz3
+            quiz3Index = 0;
+            quiz3Score = 0;
+            gameState = "quiz3";
+          }
         }
         break;
       }
@@ -622,7 +610,11 @@ function mousePressed() {
     for (let i = 0; i < numOptions; i++) {
       let x = startX + i * (btnWidth + spacing);
       if (mouseX > x && mouseX < x + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-        if (i === qObj.correct) {
+        if (i !== qObj.correct) {
+          // Wrong answer, restart game
+          player.set(100, 200);
+          gameState = "start";
+        } else {
           quiz3Score++;
           playerXP++;
           if (playerXP >= xpToLevel) {
@@ -631,10 +623,10 @@ function mousePressed() {
             showLevelUpFlash = true;
             lastLevelUpTime = millis();
           }
-        }
-        quiz3Index++;
-        if (quiz3Index >= quiz3Questions.length) {
-          gameState = "congratulations";
+          quiz3Index++;
+          if (quiz3Index >= quiz3Questions.length) {
+            gameState = "congratulations";
+          }
         }
         break;
       }
@@ -642,30 +634,26 @@ function mousePressed() {
   } else if (gameState === "congratulations") {
     gameState = "minigame";
   } else if (gameState === "minigame") {
-    // Detect clicks on color options
-    let colors = ["red", "blue", "green"];
-    for (let i = 0; i < colors.length; i++) {
-      let x = 50 + i * 110;
-      let y = 80;
-      if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 40) {
-        chosenColor = colors[i];
-      }
-    }
-
-    // Detect clicks on size options
-    let sizeOptions = ["small", "medium", "large"];
-    for (let i = 0; i < sizeOptions.length; i++) {
-      let x = 50 + i * 110;
-      let y = 140;
-      if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 40) {
-        chosenSize = sizeOptions[i];
+    // Detect clicks on code pieces
+    if (!foundAllPieces) {
+      for (let i = 0; i < codePieces.length; i++) {
+        let pos = piecePositions[i];
+        if (mouseX > pos.x && mouseX < pos.x + 60 && mouseY > pos.y && mouseY < pos.y + 30) {
+          if (!collectedPieces.includes(codePieces[i])) {
+            collectedPieces.push(codePieces[i]);
+            if (collectedPieces.length >= codePieces.length) {
+              foundAllPieces = true;
+            }
+          }
+        }
       }
     }
 
     // Check for End button click
     if (mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height - 60 && mouseY < height - 20) {
       console.log("End button clicked. Transition to a new state or screen.");
-      // Transition to another screen if needed (set gameState to something else)
+      collectedPieces = [];
+      foundAllPieces = false;
       gameState = "start"; // Example of going back to start
     }
   }
