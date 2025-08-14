@@ -5,44 +5,47 @@ let goal;
 let obstacles = [];
 let gameState = "start";
 
-// quiz2: three-question quiz after cutscene7
+// Quiz questions and tracking
 let quiz2Questions = [];
 let quiz2Index = 0;
 let quiz2Score = 0;
 
-// New quiz3: three-question quiz after quiz2
 let quiz3Questions = [];
 let quiz3Index = 0;
-let quiz3Score = 0;       
+let quiz3Score = 0;
 
-// mini-game (CSS interactive lesson)
-let chosenColor = "red";    // Track chosen color
-let chosenSize = "medium";  // Track chosen size, starts medium
+let quiz4Questions = [];
+let quiz4Index = 0;
+let quiz4Score = 0;
 
-// Leveling / XP system
+// Mini-game
+let codePieces = ["let", "x", "=", "10;"];
+let collectedPieces = [];
+let foundAllPieces = false;
+let piecePositions = [];
+
+// Leveling system
 let playerLevel = 1;
 let playerXP = 0;
 let xpToLevel = 5;
 let lastLevelUpTime = 0;
 let showLevelUpFlash = false;
 
-// Mini-game state for code pieces
-let codePieces = ["let", "x", "=", "10;"];
-let collectedPieces = [];
-let foundAllPieces = false;
-let piecePositions = []; // Positions for the pieces
+// Completion flags
+let completedQuiz2 = false;
+let completedQuiz3 = false;
+let completedQuiz4 = false;
+let completedMinigame = false;
 
 function preload() {
-  playerImg = loadImage('Mike.png', () => console.log('playerImg loaded'), () => console.error('playerImg failed to load: Mike.png'));
-  goalImg = loadImage('Yeshihouse.jpeg', () => console.log('goalImg loaded'), () => console.error('goalImg failed to load: Yeshihouse.jpeg'));
-  cutscene1Img = loadImage('Yeshi.jpg', () => console.log('cutscene1Img loaded'), () => console.error('cutscene1Img failed to load: Yeshi.jpg'));
-  cutscene2Img = loadImage('Mike.png', () => console.log('cutscene2Img loaded'), () => console.error('cutscene2Img failed to load: Mike.png'));
-  cutscene3Img = loadImage('Yeshi.jpg', () => console.log('cutscene3Img loaded'), () => console.error('cutscene3Img failed to load: Yeshi.jpg'));
-
-  // Cutscene 4+ assets
-  insideImg = loadImage('Inside.jpeg', () => console.log('insideImg loaded'), () => console.error('insideImg failed to load: Inside.jpeg'));
-  cutscene4Mike = loadImage('Mike.png', () => console.log('cutscene4Mike loaded'), () => console.error('cutscene4Mike failed to load: Mike.png'));
-  cutscene4Yeshi = loadImage('Yeshi.jpg', () => console.log('cutscene4Yeshi loaded'), () => console.error('cutscene4Yeshi failed to load: Yeshi.jpg'));
+  playerImg = loadImage('Mike.png');
+  goalImg = loadImage('Yeshihouse.jpeg');
+  cutscene1Img = loadImage('Yeshi.jpg');
+  cutscene2Img = loadImage('Mike.png');
+  cutscene3Img = loadImage('Yeshi.jpg');
+  insideImg = loadImage('Inside.jpeg');
+  cutscene4Mike = loadImage('Mike.png');
+  cutscene4Yeshi = loadImage('Yeshi.jpg');
 }
 
 function setup() {
@@ -56,58 +59,88 @@ function setup() {
     obstacles.push(createVector(x, y));
   }
 
-  // Initialize piece positions
-  for (let i = 0; i < codePieces.length; i++) {
-    piecePositions.push(createVector(random(50, 550), random(50, 350)));
-  }
-
-  textFont('Arial');
-  textAlign(CENTER);
-
-  // Initialize quizzes
   quiz2Questions = [
     { q: "What does Yeshi teach Mike first?", options: ["How to cook", "How to code", "How to sleep"], correct: 1 },
     { q: "Which key moves a character left?", options: ["LEFT_ARROW", "UP_ARROW", "SPACE"], correct: 0 },
     { q: "If someone helps you, a good response is:", options: ["Run away", "Be rude", "Be grateful and learn"], correct: 2 }
   ];
   quiz3Questions = [
-    { q: "What is the main character's goal?", options: ["Find shelter", "Learn to code", "Defeat a dragon"], correct: 1 },
-    { q: "What shape is a pixel?", options: ["Square", "Circle", "Triangle"], correct: 0 },
-    { q: "Which method adds an element to an array?", options: ["append()", "push()", "add()"], correct: 1 }
+    { q: "What is Mike's ultimate goal in the game?", options: ["To eat food", "To find a home", "To learn coding"], correct: 2 },
+    { q: "An array in JavaScript begins with index:", options: ["0", "1", "random number"], correct: 0 },
+    { q: "In JavaScript, which method can remove the last item of an array?", options: ["remove()", "pop()", "delete()"], correct: 1 }
   ];
+  quiz4Questions = [
+    { q: "How do you declare a constant in JavaScript?", options: ["let", "const", "var"], correct: 1 },
+    { q: "Which method turns a string into an array?", options: ["split()", "divide()", "separate()"], correct: 0 },
+    { q: "What does JSON stand for?", options: ["JavaScript Object Notation", "Java Serializable Object Notation", "Java Standard Object Notation"], correct: 0 }
+  ];
+
+  resetMiniGamePieces();
+  textFont('Arial');
+  textAlign(CENTER, CENTER);
+}
+
+function resetMiniGamePieces() {
+  piecePositions = [];
+  collectedPieces = [];
+  foundAllPieces = false;
+  for (let i = 0; i < codePieces.length; i++) {
+    piecePositions.push(createVector(random(50, 550), random(50, 350)));
+  }
 }
 
 function draw() {
   background(220);
 
-  if (gameState === "start") {
-    drawStartScreen();
-  } else if (gameState === "play") {
-    drawPlayScreen();
-  } else if (gameState === "cutscene1") {
-    drawCutscene1();
-  } else if (gameState === "cutscene2") {
-    drawCutscene2();
-  } else if (gameState === "cutscene3") {
-    drawCutscene3();
-  } else if (gameState === "quiz") {
-    drawQuiz();
-  } else if (gameState === "cutscene4") {
-    drawCutscene4();
-  } else if (gameState === "cutscene5") {
-    drawCutscene5();
-  } else if (gameState === "cutscene6") {
-    drawCutscene6();
-  } else if (gameState === "cutscene7") {
-    drawCutscene7();
-  } else if (gameState === "quiz2") {
-    drawQuiz2();
-  } else if (gameState === "quiz3") {
-    drawQuiz3();
-  } else if (gameState === "congratulations") {
-    drawCongratulationsScreen();
-  } else if (gameState === "minigame") {
-    drawCodeMiniGame();
+  switch (gameState) {
+    case "start":
+      drawStartScreen();
+      break;
+    case "play":
+      drawPlayScreen();
+      break;
+    case "cutscene1":
+      drawCutscene1();
+      break;
+    case "cutscene2":
+      drawCutscene2();
+      break;
+    case "cutscene3":
+      drawCutscene3();
+      break;
+    case "quiz":
+      drawQuiz();
+      break;
+    case "cutscene4":
+      drawCutscene4();
+      break;
+    case "cutscene5":
+      drawCutscene5();
+      break;
+    case "cutscene6":
+      drawCutscene6();
+      break;
+    case "cutscene7":
+      drawCutscene7();
+      break;
+    case "quiz2":
+      drawQuiz2();
+      break;
+    case "quiz3":
+      drawQuiz3();
+      break;
+    case "congratulations":
+      drawCongratulationsScreen();
+      break;
+    case "minigame":
+      drawCodeMiniGame();
+      break;
+    case "quiz4":
+      drawQuiz4();
+      break;
+    case "finale":
+      drawFinaleScreen();
+      break;
   }
 
   drawLevelUI();
@@ -127,14 +160,14 @@ function drawCutsceneText(textStr) {
 
   fill(255);
   textAlign(CENTER, CENTER);
-  textSize(24);  // Set all cutscene text to a consistent size
+  textSize(24);
   text(textStr, width / 2, height / 2);
 }
 
 function drawQuestionPrompt(textStr) {
   fill(255, 215, 0);
   textAlign(CENTER, TOP);
-  textSize(24);  // Consistent size for question prompts
+  textSize(24);
   text(textStr, width / 2, 30);
 }
 
@@ -143,7 +176,7 @@ function drawAnswerBox(x, y, w, h, textStr) {
   rect(x, y, w, h, 10);
   fill(0);
   textAlign(CENTER, CENTER);
-  textSize(14);  // Smaller font size for answer options
+  textSize(14);
   text(textStr, x + w / 2, y + h / 2);
 }
 
@@ -214,16 +247,13 @@ function drawCutscene1() {
 }
 
 function drawCutscene2() {
-  background(100);
   if (cutscene2Img) image(cutscene2Img, width / 2 - 100, 100, 200, 200);
-
-  drawQuestionPrompt("Choose wisely!");
+  drawCutsceneText("Choose wisely!");
 
   let btnWidth = 220;
   let btnHeight = 50;
   let spacing = 40;
-  let totalWidth = btnWidth * 2 + spacing;
-  let startX = (width - totalWidth) / 2;
+  let startX = (width - (btnWidth * 2 + spacing)) / 2;
   let btnY = 300;
 
   drawAnswerBox(startX, btnY, btnWidth, btnHeight, "None of your business");
@@ -236,17 +266,11 @@ function drawCutscene3() {
 }
 
 function drawQuiz() {
-  background(150);
-  fill(255);
-  rect(0, 0, width, 50);
-
   drawQuestionPrompt("Do you accept Yeshi's offer?");
-
   let btnWidth = 220;
   let btnHeight = 50;
   let spacing = 40;
-  let totalWidth = btnWidth * 2 + spacing;
-  let startX = (width - totalWidth) / 2;
+  let startX = (width - (btnWidth * 2 + spacing)) / 2;
   let btnY = 300;
 
   drawAnswerBox(startX, btnY, btnWidth, btnHeight, "Decline Yeshi's offer");
@@ -264,30 +288,20 @@ function drawCutscene4() {
   rect(0, 0, width, height);
 
   if (cutscene4Mike) {
-    let w = 200;
-    let h = 200;
-    image(cutscene4Mike, 50, height / 2 - h / 2, w, h);
+    image(cutscene4Mike, 50, height / 2 - 100, 200, 200);
   } else {
     fill(255);
     rect(50, height / 2 - 100, 200, 200);
   }
 
   if (cutscene4Yeshi) {
-    let w = 200;
-    let h = 200;
-    image(cutscene4Yeshi, width - 250, height / 2 - h / 2, w, h);
+    image(cutscene4Yeshi, width - 250, height / 2 - 100, 200, 200);
   } else {
     fill(255);
     rect(width - 250, height / 2 - 100, 200, 200);
   }
 
-  fill(255);
-  rect(0, 0, width, 50);
-
-  fill(0);
-  textAlign(CENTER);
-  textSize(16);
-  text("You: What are you doing?", width / 2, 30);
+  drawCutsceneText("You: What are you doing?");
 }
 
 function drawCutscene5() {
@@ -314,11 +328,7 @@ function drawCutscene5() {
     rect(width - 250, height / 2 - 100, 200, 200);
   }
 
-  fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-  textSize(16);
-  text("Yeshi: I'm coding. Do you know how to code?", width / 2, 30);
+  drawCutsceneText("Yeshi: I'm coding. Do you know how to code?");
 }
 
 function drawCutscene6() {
@@ -345,11 +355,7 @@ function drawCutscene6() {
     rect(width - 250, height / 2 - 100, 200, 200);
   }
 
-  fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-  textSize(16);
-  text("You: No, I don't.", width / 2, 30);
+  drawCutsceneText("You: No, I don't.");
 }
 
 function drawCutscene7() {
@@ -376,38 +382,25 @@ function drawCutscene7() {
     rect(width - 250, height / 2 - 100, 200, 200);
   }
 
-  fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-  textSize(16);
-  text("Yeshi: Here let me teach how to.", width / 2, 30);
-
-  textSize(12);
-  text("Click to begin a short 3-question quiz", width / 2, 70);
+  drawCutsceneText("Yeshi: Here let me teach you. Click to start a quiz.");
 }
 
 function drawQuiz2() {
   background(30, 120, 80);
-  fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-
   let qObj = quiz2Questions[quiz2Index];
 
   drawQuestionPrompt("Question " + (quiz2Index + 1) + " of " + quiz2Questions.length);
-  textSize(24);
   fill(255);
+  textSize(24);
   text(qObj.q, width / 2, 120);
 
-  let btnWidth = 180;  // Reduced button width
-  let btnHeight = 40;  // Reduced button height
-  let spacing = 30;    // Smaller spacing between options
-  let numOptions = qObj.options.length;
-  let totalWidth = btnWidth * numOptions + spacing * (numOptions - 1);
-  let startX = (width - totalWidth) / 2;
+  let btnWidth = 180;
+  let btnHeight = 40;
+  let spacing = 30;
+  let startX = (width - (btnWidth * qObj.options.length + spacing * (qObj.options.length - 1))) / 2;
   let btnY = 220;
 
-  for (let i = 0; i < numOptions; i++) {
+  for (let i = 0; i < qObj.options.length; i++) {
     drawAnswerBox(startX + i * (btnWidth + spacing), btnY, btnWidth, btnHeight, qObj.options[i]);
   }
 
@@ -419,26 +412,20 @@ function drawQuiz2() {
 
 function drawQuiz3() {
   background(30, 150, 100);
-  fill(255);
-  rect(0, 0, width, 50);
-  fill(0);
-
   let qObj = quiz3Questions[quiz3Index];
 
   drawQuestionPrompt("Question " + (quiz3Index + 1) + " of " + quiz3Questions.length);
-  textSize(24);
   fill(255);
+  textSize(24);
   text(qObj.q, width / 2, 120);
 
-  let btnWidth = 180;  // Reduced button width
-  let btnHeight = 40;  // Reduced button height
-  let spacing = 30;    // Smaller spacing between options
-  let numOptions = qObj.options.length;
-  let totalWidth = btnWidth * numOptions + spacing * (numOptions - 1);
-  let startX = (width - totalWidth) / 2;
+  let btnWidth = 180;
+  let btnHeight = 40;
+  let spacing = 30;
+  let startX = (width - (btnWidth * qObj.options.length + spacing * (qObj.options.length - 1))) / 2;
   let btnY = 220;
 
-  for (let i = 0; i < numOptions; i++) {
+  for (let i = 0; i < qObj.options.length; i++) {
     drawAnswerBox(startX + i * (btnWidth + spacing), btnY, btnWidth, btnHeight, qObj.options[i]);
   }
 
@@ -448,6 +435,31 @@ function drawQuiz3() {
   text("Score: " + quiz3Score, width - 20, 10);
 }
 
+function drawQuiz4() {
+  background(60, 160, 100);
+  let qObj = quiz4Questions[quiz4Index];
+
+  drawQuestionPrompt("Final Quiz: Question " + (quiz4Index + 1) + " of " + quiz4Questions.length);
+  fill(255);
+  textSize(24);
+  text(qObj.q, width / 2, 120);
+
+  let btnWidth = 180;
+  let btnHeight = 40;
+  let spacing = 30;
+  let startX = (width - (btnWidth * qObj.options.length + spacing * (qObj.options.length - 1))) / 2;
+  let btnY = 220;
+
+  for (let i = 0; i < qObj.options.length; i++) {
+    drawAnswerBox(startX + i * (btnWidth + spacing), btnY, btnWidth, btnHeight, qObj.options[i]);
+  }
+
+  fill(255);
+  textSize(18);
+  textAlign(RIGHT, TOP);
+  text("Score: " + quiz4Score, width - 20, 10);
+}
+
 function drawCongratulationsScreen() {
   background(100, 200, 150);
   fill(255);
@@ -455,8 +467,8 @@ function drawCongratulationsScreen() {
   textAlign(CENTER, CENTER);
   text("Congratulations!", width / 2, height / 2 - 40);
   textSize(20);
-  text("You've completed the quiz!", width / 2, height / 2);
-  text("Click to continue", width / 2, height / 2 + 40);
+  text("You completed Yeshi’s lessons and quizzes.", width / 2, height / 2);
+  text("Click to begin your first coding mini-game.", width / 2, height / 2 + 40);
 }
 
 function drawCodeMiniGame() {
@@ -466,6 +478,8 @@ function drawCodeMiniGame() {
   fill(0);
   textSize(20);
   textAlign(CENTER, CENTER);
+
+  let isCorrect = false;
 
   if (!foundAllPieces) {
     text("Find all pieces of code!", width / 2, 30);
@@ -481,20 +495,28 @@ function drawCodeMiniGame() {
       }
     }
   } else {
-    text("Arrange the pieces: " + collectedPieces.join(" "), width / 2, 30);
-    // Check correctness for fun
-    if (collectedPieces.join(" ") === "let x = 10;") {
+    const arrangement = collectedPieces.join(" ");
+    text("Arrange the pieces: " + arrangement, width / 2, 30);
+    if (arrangement === "let x = 10;") {
+      isCorrect = true;
       text("Correct Code!", width / 2, height - 30);
+    } else {
+      text("Not quite—try reordering.", width / 2, height - 30);
+      resetMiniGamePieces();  // Resets all pieces if the order is wrong
     }
   }
 
-  // Add End Button
-  fill(200);
-  rect(width / 2 - 50, height - 60, 100, 40, 10);
+  const btnX = width / 2 - 60, btnY = height - 64, btnW = 120, btnH = 44;
+  if (isCorrect) {
+    fill(70, 180, 90);
+  } else {
+    fill(180);
+  }
+  rect(btnX, btnY, btnW, btnH, 10);
   fill(0);
   textSize(18);
   textAlign(CENTER, CENTER);
-  text("End", width / 2, height - 40);
+  text("Finish", width / 2, btnY + btnH / 2);
 }
 
 function drawLevelUI() {
@@ -504,157 +526,198 @@ function drawLevelUI() {
   text(`Level: ${playerLevel}  XP: ${playerXP} / ${xpToLevel}`, 10, 10);
 
   if (showLevelUpFlash) {
-    fill(255, 215, 0, 200);
-    textSize(48);
+    push();
     textAlign(CENTER, CENTER);
+    stroke(0, 180);
+    strokeWeight(6);
+    fill(255, 215, 0, 230);
+    textSize(48);
     text("LEVEL UP!", width / 2, height / 2);
+    pop();
   }
 }
 
+function drawFinaleScreen() {
+  background(30, 45, 60);
+
+  noStroke();
+  fill(255, 255, 255, 16);
+  rect(0, 0, width, height);
+  fill(255);
+  rect(width / 2 - 260, 70, 520, 220, 12);
+
+  fill(0);
+  textAlign(CENTER, TOP);
+  textSize(24);
+  text("Yeshi’s Compassion • Mike’s Success", width / 2, 90);
+
+  textSize(15);
+  text(
+    "Guided by Yeshi’s kindness and patient mentorship, Mike learned to code,\n" +
+    "passed the quizzes, and completed his first program.\n\n" +
+    "What began as shelter in the rain became a new life—\n" +
+    "proof that compassion and skill can lift someone from destitution\n" +
+    "to dignity and purpose.",
+    width / 2, 130
+  );
+
+  textSize(13);
+  text(`Quizzes: ${quiz2Score}/${quiz2Questions.length} & ${quiz3Score}/${quiz3Questions.length} & ${quiz4Score}/${quiz4Questions.length}   •   Level ${playerLevel}`, width / 2, 230);
+
+  textSize(16);
+  text("Click anywhere to play again", width / 2, 268);
+}
+
 function mousePressed() {
-  if (gameState === "start") {
-    gameState = "play";
-  } else if (gameState === "cutscene1") {
-    gameState = "cutscene2";
-  } else if (gameState === "cutscene2") {
-    let btnWidth = 220;
-    let btnHeight = 50;
-    let spacing = 40;
-    let totalWidth = btnWidth * 2 + spacing;
-    let startX = (width - totalWidth) / 2;
-    let btnY = 300;
+  switch (gameState) {
+    case "start":
+      gameState = "play";
+      break;
+    case "cutscene1":
+      gameState = "cutscene2";
+      break;
+    case "cutscene2":
+    case "quiz":
+      let btnWidth = 220;
+      let btnHeight = 50;
+      let spacing = 40;
+      let startX = (width - (btnWidth * 2 + spacing)) / 2;
+      let btnY = 300;
 
-    if (mouseX > startX && mouseX < startX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-      // Wrong choice, restart to start
-      player.set(100, 200);
-      gameState = "start";
-    } else if (mouseX > startX + btnWidth + spacing && mouseX < startX + btnWidth * 2 + spacing && mouseY > btnY && mouseY < btnY + btnHeight) {
-      gameState = "cutscene3";
-    }
-  } else if (gameState === "cutscene3") {
-    gameState = "quiz";
-  } else if (gameState === "quiz") {
-    let btnWidth = 220;
-    let btnHeight = 50;
-    let spacing = 40;
-    let totalWidth = btnWidth * 2 + spacing;
-    let startX = (width - totalWidth) / 2;
-    let btnY = 300;
-
-    if (mouseX > startX && mouseX < startX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-      // Decline Yeshi's offer, restart game
-      player.set(100, 200);
-      gameState = "start";
-    } else if (mouseX > startX + btnWidth + spacing && mouseX < startX + btnWidth * 2 + spacing && mouseY > btnY && mouseY < btnY + btnHeight) {
-      gameState = "cutscene4";
-    }
-  } else if (gameState === "cutscene4") {
-    gameState = "cutscene5";
-  } else if (gameState === "cutscene5") {
-    gameState = "cutscene6";
-  } else if (gameState === "cutscene6") {
-    gameState = "cutscene7";
-  } else if (gameState === "cutscene7") {
-    quiz2Index = 0;
-    quiz2Score = 0;
-    gameState = "quiz2";
-  } else if (gameState === "quiz2") {
-    // Quiz 2 answer buttons
-    let qObj = quiz2Questions[quiz2Index];
-    let btnWidth = 180;
-    let btnHeight = 40;
-    let spacing = 30;
-    let numOptions = qObj.options.length;
-    let totalWidth = btnWidth * numOptions + spacing * (numOptions - 1);
-    let startX = (width - totalWidth) / 2;
-    let btnY = 220;
-
-    for (let i = 0; i < numOptions; i++) {
-      let x = startX + i * (btnWidth + spacing);
-      if (mouseX > x && mouseX < x + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-        if (i !== qObj.correct) {
-          // Wrong answer, restart game
-          player.set(100, 200);
-          gameState = "start";
-        } else {
-          quiz2Score++;
-          playerXP++;
-          if (playerXP >= xpToLevel) {
-            playerLevel++;
-            playerXP = 0;
-            showLevelUpFlash = true;
-            lastLevelUpTime = millis();
-          }
-          quiz2Index++;
-          if (quiz2Index >= quiz2Questions.length) {
-            // Move to quiz3
-            quiz3Index = 0;
-            quiz3Score = 0;
-            gameState = "quiz3";
-          }
-        }
-        break;
+      if (mouseX > startX && mouseX < startX + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
+        player.set(100, 200);
+        gameState = "start";
+      } else if (mouseX > startX + btnWidth + spacing && mouseX < startX + btnWidth * 2 + spacing && mouseY > btnY && mouseY < btnY + btnHeight) {
+        gameState = gameState === "quiz" ? "cutscene4" : "cutscene3";
       }
-    }
-  } else if (gameState === "quiz3") {
-    // Quiz 3 answer buttons
-    let qObj = quiz3Questions[quiz3Index];
-    let btnWidth = 180;
-    let btnHeight = 40;
-    let spacing = 30;
-    let numOptions = qObj.options.length;
-    let totalWidth = btnWidth * numOptions + spacing * (numOptions - 1);
-    let startX = (width - totalWidth) / 2;
-    let btnY = 220;
+      break;
+    case "cutscene3":
+      gameState = "quiz";
+      break;
+    case "cutscene4":
+      gameState = "cutscene5";
+      break;
+    case "cutscene5":
+      gameState = "cutscene6";
+      break;
+    case "cutscene6":
+      gameState = "cutscene7";
+      break;
+    case "cutscene7":
+      quiz2Index = quiz2Score = 0;
+      gameState = "quiz2";
+      break;
+    case "quiz2":
+      handleQuizInput(quiz2Questions, quiz2Index, "quiz3");
+      break;
+    case "quiz3":
+      handleQuizInput(quiz3Questions, quiz3Index, "congratulations");
+      break;
+    case "congratulations":
+      gameState = "minigame";
+      break;
+    case "minigame":
+      handleMiniGameMouse();
+      break;
+    case "quiz4":
+      handleQuizInput(quiz4Questions, quiz4Index, "finale");
+      break;
+    case "finale":
+      resetGame();
+      break;
+  }
+}
 
-    for (let i = 0; i < numOptions; i++) {
-      let x = startX + i * (btnWidth + spacing);
-      if (mouseX > x && mouseX < x + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
-        if (i !== qObj.correct) {
-          // Wrong answer, restart game
-          player.set(100, 200);
-          gameState = "start";
-        } else {
-          quiz3Score++;
-          playerXP++;
-          if (playerXP >= xpToLevel) {
-            playerLevel++;
-            playerXP = 0;
-            showLevelUpFlash = true;
-            lastLevelUpTime = millis();
-          }
-          quiz3Index++;
-          if (quiz3Index >= quiz3Questions.length) {
-            gameState = "congratulations";
-          }
+function handleQuizInput(questions, index, nextState) {
+  const btnWidth = 180;
+  const btnHeight = 40;
+  const spacing = 30;
+  const qObj = questions[index];
+  const startX = (width - (btnWidth * qObj.options.length + spacing * (qObj.options.length - 1))) / 2;
+  const btnY = 220;
+
+  for (let i = 0; i < qObj.options.length; i++) {
+    const x = startX + i * (btnWidth + spacing);
+    if (mouseX > x && mouseX < x + btnWidth && mouseY > btnY && mouseY < btnY + btnHeight) {
+      if (i !== qObj.correct) {
+        player.set(100, 200);
+        gameState = "start";
+      } else {
+        playerXP++;
+        if (playerXP >= xpToLevel) {
+          playerLevel++;
+          playerXP = 0;
+          showLevelUpFlash = true;
+          lastLevelUpTime = millis();
         }
-        break;
-      }
-    }
-  } else if (gameState === "congratulations") {
-    gameState = "minigame";
-  } else if (gameState === "minigame") {
-    // Detect clicks on code pieces
-    if (!foundAllPieces) {
-      for (let i = 0; i < codePieces.length; i++) {
-        let pos = piecePositions[i];
-        if (mouseX > pos.x && mouseX < pos.x + 60 && mouseY > pos.y && mouseY < pos.y + 30) {
-          if (!collectedPieces.includes(codePieces[i])) {
-            collectedPieces.push(codePieces[i]);
-            if (collectedPieces.length >= codePieces.length) {
-              foundAllPieces = true;
+
+        switch (gameState) {
+          case "quiz2":
+            quiz2Score++;
+            quiz2Index++;
+            if (quiz2Index >= questions.length) {
+              completedQuiz2 = true;
+              gameState = nextState;
             }
-          }
+            break;
+          case "quiz3":
+            quiz3Score++;
+            quiz3Index++;
+            if (quiz3Index >= questions.length) {
+              completedQuiz3 = true;
+              gameState = nextState;
+            }
+            break;
+          case "quiz4":
+            quiz4Score++;
+            quiz4Index++;
+            if (quiz4Index >= questions.length) {
+              completedQuiz4 = true;
+              gameState = nextState;
+            }
+            break;
         }
       }
-    }
-
-    // Check for End button click
-    if (mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height - 60 && mouseY < height - 20) {
-      console.log("End button clicked. Transition to a new state or screen.");
-      collectedPieces = [];
-      foundAllPieces = false;
-      gameState = "start"; // Example of going back to start
+      break;
     }
   }
+}
+
+function handleMiniGameMouse() {
+  if (!foundAllPieces) {
+    for (let i = 0; i < codePieces.length; i++) {
+      let pos = piecePositions[i];
+      if (mouseX > pos.x && mouseX < pos.x + 60 && mouseY > pos.y && mouseY < pos.y + 30) {
+        if (!collectedPieces.includes(codePieces[i])) {
+          collectedPieces.push(codePieces[i]);
+          if (collectedPieces.length >= codePieces.length) {
+            foundAllPieces = true;
+          }
+        }
+      }
+    }
+  }
+
+  const btnX = width / 2 - 60, btnY = height - 64, btnW = 120, btnH = 44;
+  const clickedFinish = mouseX > btnX && mouseX < btnX + btnW && mouseY > btnY && mouseY < btnY + btnH;
+
+  if (clickedFinish && foundAllPieces && collectedPieces.join(" ") === "let x = 10;") {
+    completedMinigame = true;
+    if (completedQuiz2 && completedQuiz3 && completedMinigame) {
+      gameState = "quiz4";
+    }
+  }
+}
+
+function resetGame() {
+  player.set(100, 200);
+
+  quiz2Index = quiz3Index = quiz4Index = 0;
+  quiz2Score = quiz3Score = quiz4Score = 0;
+
+  resetMiniGamePieces();
+
+  completedQuiz2 = completedQuiz3 = completedMinigame = completedQuiz4 = false;
+
+  gameState = "start";
 }
