@@ -38,18 +38,19 @@ let completedQuiz4 = false;
 let completedMinigame = false;
 
 function preload() {
-  playerImg = loadImage('Mike.png');
-  goalImg = loadImage('Yeshihouse.jpeg');
-  cutscene1Img = loadImage('Yeshi.jpg');
-  cutscene2Img = loadImage('Mike.png');
-  cutscene3Img = loadImage('Yeshi.jpg');
-  insideImg = loadImage('Inside.jpeg');
-  cutscene4Mike = loadImage('Mike.png');
-  cutscene4Yeshi = loadImage('Yeshi.jpg');
+  playerImg = loadImage("images/Mike.png");
+  goalImg = loadImage("images/Yeshihouse.jpeg");
+  cutscene1Img = loadImage("images/Yeshi.jpg");
+  cutscene2Img = loadImage("images/Mike.png");
+  cutscene3Img = loadImage("images/Yeshi.jpg");
+  insideImg = loadImage("images/Inside.jpeg");
+  cutscene4Mike = loadImage("images/Mike.png");
+  cutscene4Yeshi = loadImage("images/Yeshi.jpg");
 }
 
 function setup() {
-  createCanvas(600, 400);
+  let cv = createCanvas(600, 400);
+  cv.parent('game');
   player = createVector(100, 200);
   goal = createVector(500, 200);
 
