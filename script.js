@@ -29,8 +29,8 @@
     .bindPopup("📍 Lhokha")
     .on('click', () => {
       storyPanel.innerHTML = `
-        <h2>📖 Lhokha</h2>
-        <p><strong>Yumbhu Lhakhang</strong> is Tibet’s first palace, said to be built for King Nyatri Tsenpo in the 2nd century BCE. It marks the legendary beginning of Tibetan kingship in the Yarlung Valley. Perched on a hill, it later became a shrine and monastery during the reign of the 5th Dalai Lama.</p>
+        <h2></h2>
+        <p></p>
       `;
     });
 
@@ -39,8 +39,8 @@
     .bindPopup("📍 Lhasa")
     .on('click', () => {
       storyPanel.innerHTML = `
-        <h2>📖 Lhasa</h2>
-        <p><strong>Lhasa</strong> became the capital of Tibet during the 7th century under King Songtsen Gampo. With the construction of the Potala Palace and Jokhang Temple, it evolved into the center of Tibetan political power and Buddhist life — a place of unification and pilgrimage.</p>
+        <h2></h2>
+        <p></p>
       `;
     });
     // Marker for Dharamsala
@@ -48,8 +48,8 @@
         .bindPopup("📍 Dharamshala")
         .on('click', () => {
           storyPanel.innerHTML = `
-            <h2>📖 Dharamshala</h2>
-            <p>After the 1959 uprising in Lhasa, His Holiness the 14th Dalai Lama fled Tibet and found refuge in Dharamsala, India. There, the Tibetan Government-in-Exile was established — not just as a political structure, but as a cultural lifeline. In this Himalayan town, Tibetans rebuilt schools, monasteries, and institutions to preserve their language, religion, and identity. Though far from their homeland, Dharamsala has become the third symbolic capital of Tibet — a place where memory, resilience, and hope continue to thrive. </p>
+            <h2></h2>
+            <p></p>
           `;
         });
   const path = L.polyline([yumbhulhagang, lhasa, dharamsala], {
